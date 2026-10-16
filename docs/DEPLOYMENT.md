@@ -21,7 +21,7 @@ Generate a key: `python -c "import secrets; print(secrets.token_hex(32))"`
 ## Option A — PythonAnywhere (free, permanent storage)
 Best fit for the "free or low-cost tools" constraint because files persist.
 1. Create a free account at pythonanywhere.com and open a **Bash console**.
-2. `git clone <your-repo-url> internmatch && cd internmatch`
+2. `git clone https://github.com/Abdullahshahid984/internmatch.git && cd internmatch`, then run `bash deploy/pythonanywhere_setup.sh` (steps 3 is done for you and it prints a secret key). In step 6 use `deploy/pythonanywhere_wsgi.py` as the template.
 3. `python3 -m venv ~/.venv-im && source ~/.venv-im/bin/activate && pip install -r requirements.txt`
 4. Open the **Web** tab → **Add a new web app** → **Manual configuration** → pick the Python version you used for the venv.
 5. In the Web tab set **Virtualenv** to `/home/<you>/.venv-im` and **Source code** to `/home/<you>/internmatch`.
