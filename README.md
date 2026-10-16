@@ -1,4 +1,4 @@
-# InternMatch — Student Skills and Internship Matching System
+# InternMatch Student Skills and Internship Matching System
 
 Flask + SQLite web app. Students build skill profiles and take verified tests; employers post internships; a matching algorithm ranks internships for students and candidates for employers.
 
