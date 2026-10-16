@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring, csrf %}
+{% block title %}Employer dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Employer dashboard</h1>
+  <a class="btn btn-primary" href="{{ url_for('new_internship') }}">+ Post internship</a>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="stat">{{ open_count }}</div><div class="text-muted small">Open listings</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="stat">{{ total_apps }}</div><div class="text-muted small">Applicants</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="stat">{{ counts.shortlisted }}</div><div class="text-muted small">Shortlisted</div></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3"><div class="stat">{{ counts.accepted }}</div><div class="text-muted small">Accepted</div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card p-3">
+      <h2 class="h5">Your listings</h2>
+      <div class="table-responsive"><table class="table mb-0">
+        <thead><tr><th>Title</th><th>Status</th><th>Applicants</th><th>Avg match</th><th></th></tr></thead>
+        {% for l in listings %}
+        <tr>
+          <td><a href="{{ url_for('candidates', iid=l.id) }}">{{ l.title }}</a></td>
+          <td><span class="badge text-bg-{{ 'success' if l.status == 'open' else 'secondary' }}">{{ l.status }}</span></td>
+          <td>{{ l.apps }}</td><td>{{ l.avg_score if l.avg_score is not none else '—' }}{{ '%' if l.avg_score is not none }}</td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('candidates', iid=l.id) }}">Candidates</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_internship', iid=l.id) }}">Edit</a>
+            <form class="d-inline" method="post" action="{{ url_for('toggle_internship', iid=l.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-secondary">{{ 'Close' if l.status == 'open' else 'Reopen' }}</button></form>
+            <form class="d-inline" method="post" action="{{ url_for('delete_internship', iid=l.id) }}" onsubmit="return confirm('Delete this listing and all its applications?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
+          </td>
+        </tr>
+        {% else %}<tr><td colspan="5" class="text-center text-muted py-4">No listings yet.</td></tr>{% endfor %}
+      </table></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-3 mb-3"><h2 class="h5">Pipeline</h2><canvas id="pipe" height="180" aria-label="Applicants by status"></canvas></div>
+    <div class="card p-3"><h2 class="h5">Top unreviewed candidates</h2>
+      {% for a in top %}
+      <a class="d-flex align-items-center gap-2 py-2 border-top text-decoration-none text-reset" href="{{ url_for('view_candidate', aid=a.id) }}">
+        {{ ring(a.score) }}<div><div class="fw-semibold">{{ a.name }}</div><div class="small text-muted">{{ a.title }}</div></div></a>
+      {% else %}<p class="text-muted mb-0">Nobody waiting for review.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById('pipe'), {
+    type: 'bar',
+    data: { labels: {{ counts.keys()|list|tojson }}, datasets: [{ data: {{ counts.values()|list|tojson }}, backgroundColor: ['#6c757d', '#0d6efd', '#198754', '#dc3545'] }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+</script>
+{% endblock %}

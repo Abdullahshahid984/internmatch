@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">My profile</h1>
+  <div style="min-width:180px"><div class="small text-muted">{{ completeness }}% complete</div>
+    <div class="progress" style="height:8px"><div class="progress-bar" style="width: {{ completeness }}%"></div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card p-3 h-100">
+      <h2 class="h5">Education &amp; interests</h2>
+      <form method="post" action="{{ url_for('student_profile') }}">
+        {{ csrf() }}
+        <div class="row g-2">
+          <div class="col-12"><label class="form-label" for="name">Full name</label><input class="form-control" id="name" name="name" value="{{ g.user.name }}" maxlength="100"></div>
+          <div class="col-12"><label class="form-label" for="university">University</label><input class="form-control" id="university" name="university" value="{{ p.university }}"></div>
+          <div class="col-sm-6"><label class="form-label" for="degree">Degree level</label>
+            <select class="form-select" id="degree" name="degree">
+              {% for d in ['', 'High School', 'Diploma', 'Bachelor', 'Master', 'PhD'] %}<option {{ 'selected' if p.degree == d }}>{{ d }}</option>{% endfor %}
+            </select></div>
+          <div class="col-sm-6"><label class="form-label" for="major">Major / field</label><input class="form-control" id="major" name="major" value="{{ p.major }}" placeholder="e.g. Computer Science"></div>
+          <div class="col-sm-4"><label class="form-label" for="gpa">GPA</label><input class="form-control" id="gpa" name="gpa" type="number" step="0.01" min="0" max="4.5" value="{{ p.gpa if p.gpa is not none }}"></div>
+          <div class="col-sm-4"><label class="form-label" for="grad_year">Graduation year</label><input class="form-control" id="grad_year" name="grad_year" type="number" min="2000" max="2100" value="{{ p.grad_year or '' }}"></div>
+          <div class="col-sm-4"><label class="form-label" for="phone">Phone</label><input class="form-control" id="phone" name="phone" value="{{ p.phone }}"></div>
+          <div class="col-12"><label class="form-label" for="location">Preferred location</label><input class="form-control" id="location" name="location" value="{{ p.location }}"></div>
+          <div class="col-12"><label class="form-label" for="interests">Interests <span class="text-muted small">(comma separated)</span></label><input class="form-control" id="interests" name="interests" value="{{ p.interests }}" placeholder="web development, data science"></div>
+          <div class="col-12"><label class="form-label" for="bio">About me</label><textarea class="form-control" id="bio" name="bio" rows="3" maxlength="1000">{{ p.bio }}</textarea></div>
+        </div>
+        <button class="btn btn-primary mt-3">Save profile</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-3 mb-3" id="skills">
+      <h2 class="h5">Skills</h2>
+      <p class="small text-muted">Self-rated skills count less than test-verified ones. <a href="{{ url_for('tests_home') }}">Take a skill test</a>.</p>
+      {% for s in skills %}
+      <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+        <div>{{ s.skill }} <span class="text-muted small">level {{ s.level }}/5 · {{ s.kind }}</span>
+          {% if s.skill|lower in tests %}<span class="chip ver">verified {{ tests[s.skill|lower]|round|int }}%</span>{% endif %}</div>
+        <form method="post" action="{{ url_for('delete_item', kind='skills', item_id=s.id) }}">{{ csrf() }}<button class="btn btn-sm btn-link text-danger" aria-label="Remove {{ s.skill }}">Remove</button></form>
+      </div>
+      {% else %}<p class="text-muted">No skills added yet.</p>{% endfor %}
+      <form method="post" action="{{ url_for('add_skill') }}" class="row g-2 mt-2">
+        {{ csrf() }}
+        <div class="col-sm-5"><input class="form-control" name="skill" placeholder="Skill (e.g. Python)" required maxlength="50" aria-label="Skill name"></div>
+        <div class="col-6 col-sm-3"><select class="form-select" name="level" aria-label="Level">{% for n in range(1, 6) %}<option value="{{ n }}" {{ 'selected' if n == 3 }}>Level {{ n }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-sm-2"><select class="form-select" name="kind" aria-label="Type"><option value="technical">Tech</option><option value="soft">Soft</option></select></div>
+        <div class="col-12 col-sm-2"><button class="btn btn-outline-primary w-100">Add</button></div>
+      </form>
+    </div>
+    <div class="card p-3 mb-3" id="projects">
+      <h2 class="h5">Projects</h2>
+      {% for pr in projects %}
+      <div class="border-bottom py-2 d-flex justify-content-between"><div><strong>{{ pr.title }}</strong><div class="small text-muted">{{ pr.description }}</div><div class="small">{{ pr.tech }}</div></div>
+        <form method="post" action="{{ url_for('delete_item', kind='projects', item_id=pr.id) }}">{{ csrf() }}<button class="btn btn-sm btn-link text-danger">Remove</button></form></div>
+      {% endfor %}
+      <form method="post" action="{{ url_for('add_project') }}" class="mt-2">
+        {{ csrf() }}
+        <input class="form-control mb-2" name="title" placeholder="Project title" required maxlength="120" aria-label="Project title">
+        <input class="form-control mb-2" name="tech" placeholder="Technologies (comma separated)" aria-label="Technologies">
+        <textarea class="form-control mb-2" name="description" rows="2" placeholder="What did you build?" maxlength="600" aria-label="Description"></textarea>
+        <button class="btn btn-outline-primary btn-sm">Add project</button>
+      </form>
+    </div>
+    <div class="card p-3" id="certs">
+      <h2 class="h5">Certifications</h2>
+      {% for c in certs %}
+      <div class="border-bottom py-2 d-flex justify-content-between"><div><strong>{{ c.name }}</strong> <span class="small text-muted">{{ c.issuer }} {{ c.year or '' }}</span></div>
+        <form method="post" action="{{ url_for('delete_item', kind='certs', item_id=c.id) }}">{{ csrf() }}<button class="btn btn-sm btn-link text-danger">Remove</button></form></div>
+      {% endfor %}
+      <form method="post" action="{{ url_for('add_cert') }}" class="row g-2 mt-2">
+        {{ csrf() }}
+        <div class="col-sm-5"><input class="form-control" name="name" placeholder="Certification" required maxlength="150" aria-label="Certification name"></div>
+        <div class="col-sm-4"><input class="form-control" name="issuer" placeholder="Issuer" aria-label="Issuer"></div>
+        <div class="col-6 col-sm-3"><input class="form-control" name="year" type="number" placeholder="Year" aria-label="Year"></div>
+        <div class="col-12"><button class="btn btn-outline-primary btn-sm">Add certification</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

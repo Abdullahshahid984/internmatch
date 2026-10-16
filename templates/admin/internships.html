@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Manage listings{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Internship listings</h1>
+<div class="card p-3"><div class="table-responsive"><table class="table mb-0">
+  <thead><tr><th>Title</th><th>Company</th><th>Status</th><th>Applicants</th><th>Posted</th><th></th></tr></thead>
+  {% for r in rows %}
+  <tr>
+    <td><a href="{{ url_for('internship_detail', iid=r.id) }}">{{ r.title }}</a></td><td>{{ r.company }}</td>
+    <td>{% if r.removed %}<span class="badge text-bg-danger">Removed</span>{% else %}<span class="badge text-bg-{{ 'success' if r.status == 'open' else 'secondary' }}">{{ r.status }}</span>{% endif %}</td>
+    <td>{{ r.apps }}</td><td class="small">{{ r.created_at }}</td>
+    <td><form method="post" action="{{ url_for('admin_remove_internship', iid=r.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-{{ 'success' if r.removed else 'danger' }}">{{ 'Restore' if r.removed else 'Remove' }}</button></form></td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted py-4">No listings.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

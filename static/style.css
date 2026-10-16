@@ -1,0 +1,17 @@
+:root { --brand: #1e3a5f; --accent: #0dcaf0; }
+body { background: #f4f6fa; color: #1f2937; }
+.app-nav { background: var(--brand); }
+.card { border: 0; box-shadow: 0 1px 3px rgba(16, 24, 40, .08); border-radius: .75rem; }
+.hero { background: linear-gradient(135deg, var(--brand), #2f6690); color: #fff; border-radius: 1rem; padding: 3rem 1.5rem; }
+.stat { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+.score-ring { --p: 0; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: conic-gradient(var(--c, #198754) calc(var(--p) * 1%), #e5e7eb 0); position: relative; font-weight: 700; font-size: .9rem; }
+.score-ring::before { content: ""; position: absolute; inset: 6px; background: #fff; border-radius: 50%; }
+.score-ring span { position: relative; }
+.score-ring.big { width: 96px; height: 96px; font-size: 1.3rem; }
+.chip { display: inline-block; padding: .15rem .55rem; margin: 0 .25rem .25rem 0; border-radius: 1rem; font-size: .8rem; background: #e8eef7; color: var(--brand); }
+.chip.ok { background: #d1e7dd; color: #0f5132; }
+.chip.miss { background: #f8d7da; color: #842029; }
+.chip.ver { background: #cff4fc; color: #055160; }
+.table > :not(caption) > * > * { vertical-align: middle; }
+@media (max-width: 576px) { .stat { font-size: 1.5rem; } .hero { padding: 2rem 1rem; } }

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Find the right internship{% endblock %}
+{% block content %}
+<div class="hero text-center mb-4">
+  <h1 class="display-5 fw-bold">The right internship, matched to your skills</h1>
+  <p class="lead mb-4">Students build a skills profile and take verified tests. Employers post requirements. We rank the best matches for both sides.</p>
+  <a class="btn btn-info btn-lg me-2" href="{{ url_for('register') }}">Get started</a>
+  <a class="btn btn-outline-light btn-lg" href="{{ url_for('login') }}">Log in</a>
+</div>
+<div class="row g-3 text-center mb-4">
+  <div class="col-4"><div class="card p-3"><div class="stat">{{ stats.students }}</div><div class="text-muted small">Students</div></div></div>
+  <div class="col-4"><div class="card p-3"><div class="stat">{{ stats.employers }}</div><div class="text-muted small">Employers</div></div></div>
+  <div class="col-4"><div class="card p-3"><div class="stat">{{ stats.internships }}</div><div class="text-muted small">Open internships</div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-md-4"><div class="card h-100 p-3"><h5>For students</h5><p class="mb-0 text-muted">Add skills, projects and certificates, prove them with quick tests, then see internships ranked by match score.</p></div></div>
+  <div class="col-md-4"><div class="card h-100 p-3"><h5>For employers</h5><p class="mb-0 text-muted">Post required and preferred skills and review applicants already ranked, instead of reading every resume.</p></div></div>
+  <div class="col-md-4"><div class="card h-100 p-3"><h5>Transparent matching</h5><p class="mb-0 text-muted">Every score shows what matched, what is missing and which skills are test-verified.</p></div></div>
+</div>
+{% endblock %}

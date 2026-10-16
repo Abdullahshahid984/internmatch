@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring %}
+{% block title %}{{ skill }} result{% endblock %}
+{% block content %}
+<div class="card p-4 mb-3 d-flex flex-row align-items-center gap-3">
+  {{ ring(pct, true) }}
+  <div><h1 class="h4 mb-1">{{ skill }}: {{ correct }} / {{ total }} correct</h1>
+    <div class="text-muted">{{ 'Great result — this skill is now verified on your profile.' if pct >= 60 else 'Keep practising and retake the test to improve your verified score.' }}</div></div>
+</div>
+{% for r in review %}
+<div class="card p-3 mb-2">
+  <div class="fw-semibold">{{ loop.index }}. {{ r.q.question }}</div>
+  {% for k in ['a','b','c','d'] %}
+    <div class="{{ 'text-success fw-semibold' if k == r.q.answer else ('text-danger' if k == r.chosen else '') }}">
+      {{ k|upper }}. {{ r.q[k] }}{% if k == r.q.answer %} ✓{% elif k == r.chosen %} ✗ (your answer){% endif %}</div>
+  {% endfor %}
+</div>
+{% endfor %}
+<a class="btn btn-primary" href="{{ url_for('tests_home') }}">Back to tests</a>
+<a class="btn btn-outline-primary" href="{{ url_for('recommendations') }}">See my matches</a>
+{% endblock %}

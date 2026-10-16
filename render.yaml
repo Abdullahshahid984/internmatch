@@ -1,0 +1,28 @@
+# Render blueprint: New + > Blueprint > pick this repo. Fill ADMIN_EMAIL / ADMIN_PASSWORD when asked.
+# A persistent disk needs a paid instance; on the free plan data is lost on every restart/redeploy
+# (fine for a short demo, not for real users). See docs/DEPLOYMENT.md for a free option with permanent storage.
+services:
+  - type: web
+    name: internmatch
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bootstrap.py && gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: HTTPS
+        value: "1"
+      - key: INTERNMATCH_DB
+        value: /var/data/internmatch.db
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

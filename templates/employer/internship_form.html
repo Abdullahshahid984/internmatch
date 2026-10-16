@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit' if editing else 'Post' }} internship{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card p-4">
+  <h1 class="h4 mb-3">{{ 'Edit internship' if editing else 'Post an internship' }}</h1>
+  <form method="post">
+    {{ csrf() }}
+    <div class="mb-3"><label class="form-label" for="title">Title</label><input class="form-control" id="title" name="title" value="{{ i.get('title','') }}" required maxlength="150"></div>
+    <div class="mb-3"><label class="form-label" for="description">Description</label><textarea class="form-control" id="description" name="description" rows="5" maxlength="3000">{{ i.get('description','') }}</textarea></div>
+    <div class="mb-3"><label class="form-label" for="required_skills">Required skills <span class="text-muted small">(comma separated)</span></label>
+      <input class="form-control" id="required_skills" name="required_skills" value="{{ i.get('required_skills','') }}" required placeholder="Python, SQL, Git"></div>
+    <div class="mb-3"><label class="form-label" for="preferred_skills">Preferred skills <span class="text-muted small">(nice to have)</span></label>
+      <input class="form-control" id="preferred_skills" name="preferred_skills" value="{{ i.get('preferred_skills','') }}" placeholder="Docker, AWS"></div>
+    <div class="row g-2 mb-3">
+      <div class="col-sm-4"><label class="form-label" for="min_degree">Minimum degree</label>
+        <select class="form-select" id="min_degree" name="min_degree">{% for d in ['', 'High School', 'Diploma', 'Bachelor', 'Master', 'PhD'] %}<option {{ 'selected' if i.get('min_degree','') == d }} value="{{ d }}">{{ d or 'Any' }}</option>{% endfor %}</select></div>
+      <div class="col-sm-4"><label class="form-label" for="field">Field of study</label><input class="form-control" id="field" name="field" value="{{ i.get('field','') }}" placeholder="Computer Science"></div>
+      <div class="col-sm-4"><label class="form-label" for="category">Category</label><input class="form-control" id="category" name="category" value="{{ i.get('category','') }}" placeholder="web development"></div>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-sm-4"><label class="form-label" for="location">Location</label><input class="form-control" id="location" name="location" value="{{ i.get('location','') }}" placeholder="Remote / Lahore"></div>
+      <div class="col-sm-4"><label class="form-label" for="duration">Duration</label><input class="form-control" id="duration" name="duration" value="{{ i.get('duration','') }}" placeholder="3 months"></div>
+      <div class="col-sm-4"><label class="form-label" for="deadline">Application deadline</label><input class="form-control" id="deadline" name="deadline" type="date" value="{{ i.get('deadline','') }}"></div>
+    </div>
+    <button class="btn btn-primary">{{ 'Save changes' if editing else 'Publish internship' }}</button>
+    <a class="btn btn-link" href="{{ url_for('employer_dashboard') }}">Cancel</a>
+  </form>
+</div></div></div>
+{% endblock %}

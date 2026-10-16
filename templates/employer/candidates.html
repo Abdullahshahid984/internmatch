@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring, status_badge, csrf, chips, pager %}
+{% block title %}Candidates · {{ i.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+  <div><h1 class="h3 mb-0">{{ i.title }}</h1><div class="text-muted small">Ranked candidates by match score</div></div>
+  <div class="align-self-start"><a class="btn btn-outline-secondary" href="{{ url_for('candidates_csv', iid=i.id) }}">Export CSV</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('employer_dashboard') }}">← Dashboard</a></div>
+</div>
+<div class="mb-3">Required: {{ chips(i.required_skills) }} {% if i.preferred_skills %}<span class="text-muted small ms-2">Preferred:</span> {{ chips(i.preferred_skills) }}{% endif %}</div>
+<div class="mb-3">
+  <a class="btn btn-sm {{ 'btn-primary' if not status else 'btn-outline-primary' }}" href="{{ url_for('candidates', iid=i.id) }}">All</a>
+  {% for s in statuses %}<a class="btn btn-sm {{ 'btn-primary' if status == s else 'btn-outline-primary' }}" href="{{ url_for('candidates', iid=i.id, status=s) }}">{{ s|capitalize }}</a>{% endfor %}
+</div>
+{% for a, m in rows %}
+<div class="card p-3 mb-2">
+  <div class="d-flex gap-3 align-items-center flex-wrap">
+    <div class="fs-5 fw-bold text-muted" style="width:2rem">#{{ offset + loop.index }}</div>
+    {{ ring(m.score) }}
+    <div class="flex-grow-1" style="min-width:200px">
+      <a class="h5 text-decoration-none" href="{{ url_for('view_candidate', aid=a.id) }}">{{ a.name }}</a> {{ status_badge(a.status) }}
+      <div class="small text-muted">{{ a.degree }} {{ a.major }}{% if a.university %} · {{ a.university }}{% endif %}{% if a.gpa is not none %} · GPA {{ a.gpa }}{% endif %}</div>
+      <div class="mt-1">{% for s in m.matched %}<span class="chip ok">{{ s }}{% if s in m.verified %} ✓{% endif %}</span>{% endfor %}{% for s in m.missing %}<span class="chip miss">{{ s }}</span>{% endfor %}</div>
+    </div>
+    <form method="post" action="{{ url_for('set_status', aid=a.id) }}" class="d-flex gap-1">
+      {{ csrf() }}
+      <select class="form-select form-select-sm" name="status" aria-label="Set status for {{ a.name }}">{% for s in statuses %}<option value="{{ s }}" {{ 'selected' if a.status == s }}>{{ s|capitalize }}</option>{% endfor %}</select>
+      <button class="btn btn-sm btn-primary">Set</button>
+    </form>
+  </div>
+</div>
+{% else %}<div class="card p-4 text-center text-muted">No candidates{{ ' with this status' if status }} yet.</div>{% endfor %}
+<div class="small text-muted mt-2">{{ total }} candidate{{ 's' if total != 1 }}</div>
+{{ pager(page, pages, 'candidates', iid=i.id, status=status) }}
+{% endblock %}

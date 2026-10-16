@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring, chips, csrf, status_badge %}
+{% block title %}{{ i.title }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <div class="d-flex justify-content-between flex-wrap gap-2">
+        <div>
+          <h1 class="h3 mb-1">{{ i.title }}</h1>
+          <div class="text-muted">{{ i.company }}{% if i.location %} · {{ i.location }}{% endif %}{% if i.duration %} · {{ i.duration }}{% endif %}</div>
+        </div>
+        <div>{% if i.status == 'closed' %}<span class="badge text-bg-secondary">Closed</span>{% endif %}{% if i.removed %}<span class="badge text-bg-danger">Removed</span>{% endif %}</div>
+      </div>
+      <hr>
+      <p style="white-space: pre-line">{{ i.description or 'No description provided.' }}</p>
+      <h6>Required skills</h6><div class="mb-3">{{ chips(i.required_skills) }}</div>
+      {% if i.preferred_skills %}<h6>Preferred skills</h6><div class="mb-3">{{ chips(i.preferred_skills) }}</div>{% endif %}
+      <dl class="row mb-0 small">
+        {% if i.min_degree %}<dt class="col-sm-4">Minimum degree</dt><dd class="col-sm-8">{{ i.min_degree }}</dd>{% endif %}
+        {% if i.field %}<dt class="col-sm-4">Field of study</dt><dd class="col-sm-8">{{ i.field }}</dd>{% endif %}
+        {% if i.category %}<dt class="col-sm-4">Category</dt><dd class="col-sm-8">{{ i.category }}</dd>{% endif %}
+        {% if i.deadline %}<dt class="col-sm-4">Deadline</dt><dd class="col-sm-8">{{ i.deadline }}</dd>{% endif %}
+      </dl>
+    </div>
+    {% if i.company_desc %}<div class="card p-4 mt-3"><h6>About {{ i.company }}</h6><p class="mb-0">{{ i.company_desc }}</p></div>{% endif %}
+  </div>
+  <div class="col-lg-4">
+    {% if match %}
+    <div class="card p-4">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        {{ ring(match.score, true) }}
+        <div><div class="fw-bold">{{ label(match.score) }} match</div><div class="small text-muted">Based on your profile</div></div>
+      </div>
+      {% for name, v in match.breakdown.items() %}
+        <div class="small d-flex justify-content-between"><span>{{ name }}</span><span>{{ v }}%</span></div>
+        <div class="progress mb-2" style="height:6px"><div class="progress-bar" style="width: {{ v }}%"></div></div>
+      {% endfor %}
+      {% if match.matched %}<div class="small fw-semibold mt-2">You have</div>
+        {% for s in match.matched %}<span class="chip ok">{{ s }}{% if s in match.verified %} ✓{% endif %}</span>{% endfor %}{% endif %}
+      {% if match.missing %}<div class="small fw-semibold mt-2">Missing</div>
+        {% for s in match.missing %}<span class="chip miss">{{ s }}</span>{% endfor %}
+        <div class="small text-muted">Add these in your <a href="{{ url_for('student_profile') }}">profile</a> or take a <a href="{{ url_for('tests_home') }}">skill test</a>.</div>{% endif %}
+      <hr>
+      {% if application %}
+        <div>Application status: {{ status_badge(application.status) }}</div>
+      {% elif i.status == 'open' %}
+        <form method="post" action="{{ url_for('apply', iid=i.id) }}">
+          {{ csrf() }}
+          <label class="form-label small" for="cn">Cover note (optional)</label>
+          <textarea class="form-control mb-2" id="cn" name="cover_note" rows="3" maxlength="1000"></textarea>
+          <button class="btn btn-primary w-100">Apply now</button>
+        </form>
+      {% else %}<div class="text-muted">This internship is closed.</div>{% endif %}
+    </div>
+    {% elif g.user.role == 'employer' %}
+    <div class="card p-4"><a class="btn btn-primary mb-2" href="{{ url_for('candidates', iid=i.id) }}">View candidates</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('edit_internship', iid=i.id) }}">Edit listing</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-8 col-lg-5">
+  <div class="card p-4">
+    <h1 class="h4 mb-3">Create your account</h1>
+    <form method="post" novalidate>
+      {{ csrf() }}
+      <div class="mb-3">
+        <span class="form-label d-block">I am a…</span>
+        <div class="btn-group w-100" role="group">
+          <input type="radio" class="btn-check" name="role" id="r1" value="student" {{ 'checked' if form.get('role','student') == 'student' }}>
+          <label class="btn btn-outline-primary" for="r1">Student</label>
+          <input type="radio" class="btn-check" name="role" id="r2" value="employer" {{ 'checked' if form.get('role') == 'employer' }}>
+          <label class="btn btn-outline-primary" for="r2">Employer</label>
+        </div>
+      </div>
+      <div class="mb-3"><label class="form-label" for="name">Full name</label>
+        <input class="form-control" id="name" name="name" value="{{ form.get('name','') }}" required maxlength="100"></div>
+      <div class="mb-3" id="company-wrap"><label class="form-label" for="company">Company name <span class="text-muted small">(employers)</span></label>
+        <input class="form-control" id="company" name="company" value="{{ form.get('company','') }}" maxlength="120"></div>
+      <div class="mb-3"><label class="form-label" for="email">Email</label>
+        <input class="form-control" id="email" name="email" type="email" value="{{ form.get('email','') }}" required autocomplete="username"></div>
+      <div class="mb-3"><label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+        <div class="form-text">At least 8 characters, with a letter and a number.</div></div>
+      <div class="mb-3"><label class="form-label" for="confirm">Confirm password</label>
+        <input class="form-control" id="confirm" name="confirm" type="password" required autocomplete="new-password"></div>
+      <button class="btn btn-primary w-100">Create account</button>
+    </form>
+    <p class="small text-muted mt-3 mb-0">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+  </div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const wrap = document.getElementById('company-wrap');
+  const sync = () => { wrap.hidden = document.getElementById('r1').checked; };
+  document.querySelectorAll('input[name=role]').forEach(r => r.addEventListener('change', sync)); sync();
+</script>
+{% endblock %}

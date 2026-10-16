@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring, chips %}
+{% block title %}Recommended internships{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Internships ranked for you</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-5"><input class="form-control" name="q" value="{{ q }}" placeholder="Search title, company, skill…" aria-label="Search"></div>
+  <div class="col-md-3"><input class="form-control" name="loc" value="{{ loc }}" placeholder="Location" aria-label="Location"></div>
+  <div class="col-6 col-md-2"><select class="form-select" name="min" aria-label="Minimum match">
+    {% for v in [0, 35, 55, 75] %}<option value="{{ v }}" {{ 'selected' if min == v }}>{{ 'Any match' if v == 0 else v ~ '%+' }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+{% for i, m in rows %}
+<div class="card p-3 mb-2">
+  <div class="d-flex gap-3 align-items-center">
+    {{ ring(m.score) }}
+    <div class="flex-grow-1">
+      <a class="h5 text-decoration-none" href="{{ url_for('internship_detail', iid=i.id) }}">{{ i.title }}</a>
+      <div class="small text-muted">{{ i.company }}{% if i.location %} · {{ i.location }}{% endif %} · <strong>{{ label(m.score) }} match</strong></div>
+      <div class="mt-1">
+        {% for s in m.matched %}<span class="chip ok">{{ s }}</span>{% endfor %}
+        {% for s in m.missing %}<span class="chip miss">{{ s }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="text-end">
+      {% if i.id in applied %}<span class="badge text-bg-success">Applied</span>
+      {% else %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('internship_detail', iid=i.id) }}">View &amp; apply</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% else %}<div class="card p-4 text-center text-muted">No internships match your filters.</div>{% endfor %}
+{% endblock %}

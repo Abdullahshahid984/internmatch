@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, pager %}
+{% block title %}Manage users{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Users</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6"><input class="form-control" name="q" value="{{ term }}" placeholder="Search name or email" aria-label="Search"></div>
+  <div class="col-6 col-md-3"><select class="form-select" name="role" aria-label="Role"><option value="">All roles</option>{% for r in ['student','employer','admin'] %}<option {{ 'selected' if role == r }}>{{ r }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-3"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+<div class="card p-3"><div class="table-responsive"><table class="table mb-0">
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.name }}</td><td>{{ u.email }}</td><td><span class="badge text-bg-secondary">{{ u.role }}</span></td>
+    <td>{{ 'Active' if u.active else 'Deactivated' }}</td><td class="small">{{ u.created_at }}</td>
+    <td class="text-nowrap">{% if u.id != g.user.id %}
+      <form class="d-inline" method="post" action="{{ url_for('admin_toggle_user', uid=u.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-secondary">{{ 'Deactivate' if u.active else 'Activate' }}</button></form>
+      <form class="d-inline" method="post" action="{{ url_for('admin_delete_user', uid=u.id) }}" onsubmit="return confirm('Permanently delete {{ u.email }} and all related data?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
+    {% endif %}</td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted py-4">No users found.</td></tr>{% endfor %}
+</table></div></div>
+<div class="small text-muted mt-2">{{ total }} user{{ 's' if total != 1 }}</div>
+{{ pager(page, pages, 'admin_users', role=role, q=term) }}
+{% endblock %}

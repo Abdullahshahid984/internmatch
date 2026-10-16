@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Skill tests{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Skill verification tests</h1>
+<p class="text-muted">Short multiple-choice tests. Your best score per skill is used by the matching algorithm and carries more weight than a self-rating.</p>
+<div class="row g-3 mb-4">
+  {% for b in banks %}
+  {% set r = best.get(b.skill|lower) %}
+  <div class="col-sm-6 col-lg-4"><div class="card p-3 h-100">
+    <h2 class="h5">{{ b.skill }}</h2>
+    <div class="small text-muted mb-2">{{ b.n }} questions in bank · 8 per attempt</div>
+    {% if r %}<div class="mb-2">Best: <strong>{{ r.best|round|int }}%</strong> <span class="text-muted small">({{ r.attempts }} attempt{{ 's' if r.attempts > 1 }})</span></div>{% endif %}
+    <a class="btn btn-primary mt-auto" href="{{ url_for('take_test', skill=b.skill) }}">{{ 'Retake' if r else 'Start' }} test</a>
+  </div></div>
+  {% else %}<p class="text-muted">No tests are available yet.</p>{% endfor %}
+</div>
+{% if history %}
+<div class="card p-3"><h2 class="h5">Recent attempts</h2>
+<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Skill</th><th>Score</th><th>Date</th></tr></thead>
+{% for h in history %}<tr><td>{{ h.skill }}</td><td>{{ h.correct }}/{{ h.total }} ({{ h.pct|round|int }}%)</td><td>{{ h.taken_at }}</td></tr>{% endfor %}</table></div></div>
+{% endif %}
+{% endblock %}

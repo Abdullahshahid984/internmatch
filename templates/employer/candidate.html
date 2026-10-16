@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ring, status_badge, csrf %}
+{% block title %}{{ s.name }}{% endblock %}
+{% block content %}
+{% set profile, skills, tests, projects, certs = bundle %}
+<a class="btn btn-link px-0" href="{{ url_for('candidates', iid=i.id) }}">← Back to candidates</a>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card p-4 mb-3">
+      <h1 class="h4 mb-0">{{ s.name }} {{ status_badge(a.status) }}</h1>
+      <div class="text-muted">{{ s.email }}{% if profile.phone %} · {{ profile.phone }}{% endif %}</div>
+      <hr>
+      <dl class="row small mb-0">
+        <dt class="col-sm-3">Education</dt><dd class="col-sm-9">{{ profile.degree }} {{ profile.major }}, {{ profile.university }}{% if profile.grad_year %} ({{ profile.grad_year }}){% endif %}</dd>
+        {% if profile.gpa is not none %}<dt class="col-sm-3">GPA</dt><dd class="col-sm-9">{{ profile.gpa }}</dd>{% endif %}
+        <dt class="col-sm-3">Interests</dt><dd class="col-sm-9">{{ profile.interests or '—' }}</dd>
+        <dt class="col-sm-3">About</dt><dd class="col-sm-9">{{ profile.bio or '—' }}</dd>
+        {% if a.cover_note %}<dt class="col-sm-3">Cover note</dt><dd class="col-sm-9" style="white-space: pre-line">{{ a.cover_note }}</dd>{% endif %}
+      </dl>
+    </div>
+    <div class="card p-4 mb-3"><h2 class="h6">Skills</h2>
+      {% for sk in skills %}<span class="chip {{ 'ver' if sk.skill|lower in tests }}">{{ sk.skill }} · {{ sk.level }}/5{% if sk.skill|lower in tests %} · test {{ tests[sk.skill|lower]|round|int }}%{% endif %}</span>{% else %}<span class="text-muted">None listed</span>{% endfor %}
+    </div>
+    <div class="card p-4 mb-3"><h2 class="h6">Projects</h2>
+      {% for p in projects %}<div class="mb-2"><strong>{{ p.title }}</strong> <span class="small text-muted">{{ p.tech }}</span><div class="small">{{ p.description }}</div></div>{% else %}<span class="text-muted">None listed</span>{% endfor %}
+    </div>
+    <div class="card p-4"><h2 class="h6">Certifications</h2>
+      {% for c in certs %}<div>{{ c.name }} <span class="small text-muted">{{ c.issuer }} {{ c.year or '' }}</span></div>{% else %}<span class="text-muted">None listed</span>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-4">
+      <div class="d-flex align-items-center gap-3 mb-3">{{ ring(match.score, true) }}<div><div class="fw-bold">{{ label(match.score) }} match</div><div class="small text-muted">for {{ i.title }}</div></div></div>
+      {% for name, v in match.breakdown.items() %}
+        <div class="small d-flex justify-content-between"><span>{{ name }}</span><span>{{ v }}%</span></div>
+        <div class="progress mb-2" style="height:6px"><div class="progress-bar" style="width: {{ v }}%"></div></div>
+      {% endfor %}
+      {% if match.missing %}<div class="small fw-semibold mt-2">Missing required</div>{% for m in match.missing %}<span class="chip miss">{{ m }}</span>{% endfor %}{% endif %}
+      <hr>
+      <form method="post" action="{{ url_for('set_status', aid=a.id) }}">
+        {{ csrf() }}
+        <label class="form-label small" for="st">Decision</label>
+        <div class="d-flex gap-2"><select class="form-select" id="st" name="status">{% for st in statuses %}<option value="{{ st }}" {{ 'selected' if a.status == st }}>{{ st|capitalize }}</option>{% endfor %}</select>
+        <button class="btn btn-primary">Save</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

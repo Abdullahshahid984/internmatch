@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Admin overview{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Platform overview</h1>
+<div class="row g-3 mb-3">
+  {% for label_, key in [('Students','students'),('Employers','employers'),('Listings','internships'),('Open listings','open'),('Applications','applications'),('Accepted','placed'),('Tests taken','tests')] %}
+  <div class="col-6 col-md-3"><div class="card p-3"><div class="stat">{{ stats[key] }}</div><div class="text-muted small">{{ label_ }}</div></div></div>
+  {% endfor %}
+  <div class="col-6 col-md-3"><div class="card p-3"><div class="stat">{{ avg_score if avg_score is not none else '—' }}</div><div class="text-muted small">Avg applicant match %</div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card p-3"><h2 class="h5">Applications by status</h2>{% if by_status.values()|sum %}<canvas id="st" height="200" aria-label="Applications by status"></canvas>{% else %}<p class="text-muted mb-0">No applications yet.</p>{% endif %}</div></div>
+  <div class="col-md-6"><div class="card p-3"><h2 class="h5">Most common student skills</h2><canvas id="sk" height="200" aria-label="Top student skills"></canvas></div></div>
+</div>
+<div class="card p-3 mt-3">
+  <h2 class="h5">Objective tracking</h2>
+  <p class="small text-muted">Measured from real usage. Enter the <em>manual-process</em> baselines from your own timed trial or survey to see the improvement against the project targets.</p>
+  <div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="border rounded p-3 h-100">
+      <div class="text-muted small">Registration → first application (target: 50% faster)</div>
+      <div class="stat">{{ impact.tta_minutes if impact.tta_minutes is not none else '—' }}<span class="fs-6"> min</span></div>
+      <div class="small">{{ impact.tta_n }} student{{ 's' if impact.tta_n != 1 }} measured</div>
+      {% if impact.tta_gain is not none %}<div class="mt-1"><span class="badge text-bg-{{ 'success' if impact.tta_gain >= 50 else 'warning' }}">{{ impact.tta_gain }}% faster than baseline</span></div>{% endif %}
+    </div></div>
+    <div class="col-md-4"><div class="border rounded p-3 h-100">
+      <div class="text-muted small">Application → employer decision (target: 60% faster)</div>
+      <div class="stat">{{ impact.review_hours if impact.review_hours is not none else '—' }}<span class="fs-6"> hrs</span></div>
+      <div class="small">{{ impact.review_n }} decision{{ 's' if impact.review_n != 1 }} measured</div>
+      {% if impact.review_gain is not none %}<div class="mt-1"><span class="badge text-bg-{{ 'success' if impact.review_gain >= 60 else 'warning' }}">{{ impact.review_gain }}% faster than baseline</span></div>{% endif %}
+    </div></div>
+    <div class="col-md-4"><div class="border rounded p-3 h-100">
+      <div class="text-muted small">Placement rate (students with an accepted application)</div>
+      <div class="stat">{{ impact.placement_rate }}%</div><div class="small">{{ impact.placed }} placed</div>
+    </div></div>
+  </div>
+  <form method="post" action="{{ url_for('admin_baselines') }}" class="row g-2 align-items-end">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="col-md-4"><label class="form-label small" for="bt">Baseline: manual time to first application (minutes)</label><input class="form-control" id="bt" name="base_tta" type="number" step="any" min="0" value="{{ impact.base_tta or '' }}"></div>
+    <div class="col-md-4"><label class="form-label small" for="br">Baseline: manual time to screen/decide (hours)</label><input class="form-control" id="br" name="base_review" type="number" step="any" min="0" value="{{ impact.base_review or '' }}"></div>
+    <div class="col-md-4"><button class="btn btn-outline-primary w-100">Save baselines</button></div>
+  </form>
+</div>
+<div class="card p-3 mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Institution report</h2>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_institutions_csv') }}">Download CSV</a></div>
+  <div class="table-responsive"><table class="table table-sm mb-0">
+    <thead><tr><th>University</th><th>Students</th><th>Applications</th><th>Shortlisted</th><th>Placed</th></tr></thead>
+    {% for r in institutions %}<tr><td>{{ r.university }}</td><td>{{ r.students }}</td><td>{{ r.applications }}</td><td>{{ r.shortlisted }}</td><td>{{ r.placed }}</td></tr>
+    {% else %}<tr><td colspan="5" class="text-muted text-center">No data yet.</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const stEl = document.getElementById('st');
+  if (stEl) new Chart(stEl, { type: 'doughnut',
+    data: { labels: {{ by_status.keys()|list|tojson }}, datasets: [{ data: {{ by_status.values()|list|tojson }}, backgroundColor: ['#6c757d', '#0d6efd', '#198754', '#dc3545'] }] } });
+  new Chart(document.getElementById('sk'), { type: 'bar',
+    data: { labels: {{ top_skills|map(attribute='skill')|list|tojson }}, datasets: [{ data: {{ top_skills|map(attribute='c')|list|tojson }}, backgroundColor: '#2f6690' }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } } });
+</script>
+{% endblock %}

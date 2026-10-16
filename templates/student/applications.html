@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, csrf %}
+{% block title %}My applications{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">My applications</h1>
+<div class="card p-3"><div class="table-responsive">
+<table class="table mb-0">
+  <thead><tr><th>Internship</th><th>Company</th><th>Match</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+  {% for a in rows %}
+  <tr>
+    <td><a href="{{ url_for('internship_detail', iid=a.internship_id) }}">{{ a.title }}</a></td>
+    <td>{{ a.company }}</td><td>{{ a.score|round|int }}%</td><td>{{ status_badge(a.status) }}</td><td class="small">{{ a.updated_at }}</td>
+    <td>{% if a.status == 'applied' %}<form method="post" action="{{ url_for('withdraw', aid=a.id) }}" onsubmit="return confirm('Withdraw this application?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Withdraw</button></form>{% endif %}</td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="text-muted text-center py-4">No applications yet. <a href="{{ url_for('recommendations') }}">Browse internships</a></td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}
